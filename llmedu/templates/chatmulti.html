@@ -1,0 +1,35 @@
+<html>
+    <body>
+        <h1>윤지의 챗봇</h1>
+        <div id="chat"></div>
+        <input type="text" id="userInput" placeholder="질문을 입력하세요">
+        <button onclick="sendMessage()">전송</button>
+
+        <select id="modelSelect">
+            <option value="gpt">GPT</option>
+            <option value="gemini">GEMINI</option>
+            <option value="ollama">OLLAMA</option>
+        </select>
+        <script>
+            async function sendMessage() {
+                const model = document.getElementById("modelSelect").value;
+                const modelName = document.getElementById("modelSelect").selectedOptions[0].text; // 선택된 모델의 이름 가져오기
+                const userInput = document.getElementById("userInput").value;
+                
+                // 서버에 질문을 보내고 답변을 받음
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ question: userInput, model:model })
+                });
+                const data = await response.json();
+                const log = document.getElementById("chat");
+                log.innerHTML += `<p><strong>사용자:</strong> ${userInput}</p>`;
+                log.innerHTML += `<p><strong>${modelName}:</strong> ${data.answer}</p>`;
+                document.getElementById("userInput").value = ""; // 입력창 초기화
+            }   
+        </script>
+    </body>
+</html>

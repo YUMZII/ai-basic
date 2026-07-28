@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>문서 적재 — ERP IntelliQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f5f7fa;
+  --surface:   #ffffff;
+  --surface2:  #f0f4ff;
+  --border:    #e2e8f0;
+  --border2:   #c7d4e8;
+  --text:      #1a2332;
+  --text2:     #4a5568;
+  --muted:     #8fa3be;
+  --accent:    #2563eb;
+  --accent2:   #7c3aed;
+  --accent-bg: rgba(37,99,235,0.07);
+  --green:     #16a34a;
+  --red:       #dc2626;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 4px 12px rgba(0,0,0,0.08);
+  --font:      'Pretendard', 'Noto Sans KR', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+
+html, body { height: 100%; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); }
+
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 58px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+.logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px;
+  background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(37,99,235,0.2);
+}
+.nav-btn {
+  padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2);
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.nav-btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+
+.container { max-width: 640px; margin: 48px auto; padding: 0 20px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px; box-shadow: var(--shadow);
+}
+.card h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+.card .desc { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+
+.dropzone {
+  border: 2px dashed var(--border2); border-radius: 12px;
+  padding: 40px 20px; text-align: center; cursor: pointer;
+  transition: all .15s; background: var(--surface2);
+}
+.dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--accent-bg); }
+.dropzone .icon { font-size: 36px; margin-bottom: 10px; }
+.dropzone .main-text { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.dropzone .sub-text { font-size: 12px; color: var(--muted); }
+#fileInput { display: none; }
+
+.file-picked {
+  display: none; align-items: center; gap: 10px;
+  margin-top: 14px; padding: 10px 14px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border); font-size: 13px;
+}
+.file-picked.show { display: flex; }
+.file-picked .name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-picked .size { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+
+.upload-btn {
+  width: 100%; margin-top: 18px; padding: 13px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #4f46e5); color: #fff;
+  font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(37,99,235,0.3); transition: all .2s;
+}
+.upload-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(37,99,235,0.4); }
+.upload-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.status {
+  margin-top: 16px; padding: 12px 14px; border-radius: 10px;
+  font-size: 13px; line-height: 1.6; display: none;
+}
+.status.show { display: block; }
+.status.info    { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.status.success { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+.status.error   { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+
+.divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; font-size: 13px; color: var(--text2);
+}
+.info-row .val { font-family: var(--mono); font-weight: 700; color: var(--accent); }
+
+.reset-btn {
+  margin-top: 10px; padding: 9px 14px; border-radius: 8px;
+  border: 1px solid #fecaca; background: #fff5f5; color: var(--red);
+  font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.reset-btn:hover { background: #fee2e2; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔍</div>
+    <span class="logo-text">ERP IntelliQ</span>
+    <span class="logo-badge">문서 적재</span>
+  </div>
+  <button class="nav-btn" onclick="location.href='/'">💬 챗봇으로 돌아가기</button>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h1>📄 PDF 문서 적재</h1>
+    <p class="desc">
+      업로드한 PDF는 <strong>페이지 단위로 청크</strong>가 나뉘어(pypdf 텍스트 추출) 임베딩 후
+      <code>erpdocuments2</code> 테이블(pgvector)에 저장됩니다.
+    </p>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📤</div>
+      <div class="main-text">클릭하거나 PDF 파일을 여기로 끌어다 놓으세요</div>
+      <div class="sub-text">텍스트 기반 PDF만 지원 (스캔 이미지 PDF 미지원)</div>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf">
+
+    <div class="file-picked" id="filePicked">
+      <span>📄</span>
+      <span class="name" id="fileName"></span>
+      <span class="size" id="fileSize"></span>
+    </div>
+
+    <button class="upload-btn" id="uploadBtn" disabled onclick="uploadFile()">문서 적재 시작</button>
+
+    <div class="status" id="statusBox"></div>
+
+    <div class="divider"></div>
+
+    <div class="info-row">
+      <span>현재 적재된 페이지(청크) 수</span>
+      <span class="val" id="chunkCount">-</span>
+    </div>
+    <button class="reset-btn" onclick="resetChunks()">⚠ 전체 청크 초기화</button>
+  </div>
+</div>
+
+<script>
+let selectedFile = null;
+
+window.addEventListener('DOMContentLoaded', loadCount);
+
+function loadCount() {
+  fetch('/api/chunks/count')
+    .then(r => r.json())
+    .then(d => document.getElementById('chunkCount').textContent = `${d.count}개`)
+    .catch(() => document.getElementById('chunkCount').textContent = '연결 오류');
+}
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+fileInput.addEventListener('change', e => pickFile(e.target.files[0]));
+
+['dragover', 'dragleave', 'drop'].forEach(evt => {
+  dropzone.addEventListener(evt, e => e.preventDefault());
+});
+dropzone.addEventListener('dragover', () => dropzone.classList.add('dragover'));
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  dropzone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) pickFile(file);
+});
+
+function pickFile(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
+    showStatus('error', 'PDF 파일만 업로드할 수 있습니다.');
+    return;
+  }
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatSize(file.size);
+  document.getElementById('filePicked').classList.add('show');
+  document.getElementById('uploadBtn').disabled = false;
+  hideStatus();
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+async function uploadFile() {
+  if (!selectedFile) return;
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.textContent = '적재 중... (임베딩 생성에 시간이 걸릴 수 있어요)';
+  showStatus('info', `'${selectedFile.name}' 문서를 페이지 단위로 분석하고 임베딩하는 중입니다...`);
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+
+  try {
+    const res = await fetch('/api/ingest', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showStatus('error', data.detail || '적재 중 오류가 발생했습니다.');
+    } else {
+      showStatus('success', `✅ ${data.message}`);
+      loadCount();
+    }
+  } catch {
+    showStatus('error', '서버에 연결할 수 없습니다.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '문서 적재 시작';
+  }
+}
+
+async function resetChunks() {
+  if (!confirm('적재된 모든 청크를 삭제할까요? 이 작업은 되돌릴 수 없습니다.')) return;
+  try {
+    const res = await fetch('/api/chunks', { method: 'DELETE' });
+    const data = await res.json();
+    showStatus('info', data.message);
+    loadCount();
+  } catch {
+    showStatus('error', '삭제 중 오류가 발생했습니다.');
+  }
+}
+
+function showStatus(type, msg) {
+  const box = document.getElementById('statusBox');
+  box.className = `status show ${type}`;
+  box.textContent = msg;
+}
+function hideStatus() {
+  const box = document.getElementById('statusBox');
+  box.className = 'status';
+}
+</script>
+</body>
+</html>

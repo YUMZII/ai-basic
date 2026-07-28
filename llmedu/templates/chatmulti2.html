@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG기반 호텔 AI챗봇</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+            background: #eef1f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            width: 420px;
+            max-width: 100%;
+            height: 640px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: green;
+            color: #fff;
+            padding: 16px 20px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        #chat {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f7f8fb;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: yellowgreen;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .bot {
+            align-self: flex-start;
+            background: #e9ebf0;
+            color: #222;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #userInput:focus { border-color: yellowgreen; }
+
+        button {
+            padding: 10px 18px;
+            background: yellowgreen;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover { background: yellowgreen; }
+        button:disabled { background: green; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">RAG기반 호텔 AI챗봇</div>
+        <div id="chat"></div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="질문을 입력하세요">
+            <button id="sendBtn" onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("userInput");
+        const btn = document.getElementById("sendBtn");
+        const log = document.getElementById("chat");
+
+        function addBubble(text, who) {
+            const div = document.createElement("div");
+            div.className = "bubble " + who;
+            div.textContent = text;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;  // 스크롤 맨 아래로
+            return div;
+        }
+
+        async function sendMessage() {
+            const userInput = input.value.trim();
+            if (!userInput) return;
+
+            addBubble(userInput, "user");
+            input.value = "";
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: userInput })
+                });
+                const data = await response.json();
+                addBubble(data.answer ?? ("오류: " + (data.detail || "응답 없음")), "bot");
+            } catch (e) {
+                addBubble("요청 실패: " + e.message, "bot");
+            } finally {
+                btn.disabled = false;
+                input.focus();
+            }
+        }
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
